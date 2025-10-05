@@ -113,3 +113,21 @@ If everything goes well, the end result will be:
 1. System service `runsvdir-$USER` that execs into `runsvdir` as `$USER`.
 2. `pipewire` service running as `$USER` because the previous `runsvdir` started it.
 3. PipeWire logs will be available at `~/service/log/pipewire`.
+
+If you don't see the logs, try restarting all service logs (the install script changed `/etc/vlogger`):
+```sh
+sudo sv restart /var/service/*/log
+sv restart pipewire/log
+```
+
+If the `sv restart ...` command fails, open a new shell or prefix your command with `SVDIR` definition, like so:
+```sh
+SVDIR=~/service/sv restart pipewire/log
+```
+
+The `SVDIR` var will be set automatically for your user on new shells (thanks to the install script).
+
+If it still doesn't show up, maybe your user session already has PipeWire running?  Make sure you're not starting
+it as part of X (check your `~/.xinitrc`).  To be sure everything works the way it should, make sure you reboot
+your system and see that PipeWire is started during boot correctly.  It may emit some warnings that there is no X
+running when it starts, but it should work fine when you start X, no need to restart any service.
