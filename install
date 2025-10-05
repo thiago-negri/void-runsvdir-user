@@ -32,7 +32,7 @@ fi
 # Install one runsvdir service for each user that has a ~/service folder.
 while IFS=: read -r username _ uid _ _ uhome _; do
   # Real users start at uid 1000
-  if [ $uid -ge 1000 ] && [ -d "$uhome/service" ]; then
+  if [ $uid -ge 1000 -a -d "$uhome/service" ]; then
     newsv="/etc/sv/runsvdir-$username"
     if ! $force && [ -e "$newsv" ]; then
       echo "User runsvdir exists.  Will not overwrite.  '$newsv'"
