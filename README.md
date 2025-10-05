@@ -65,37 +65,51 @@ Example (PipeWire)
 As an example (i.e. the main reason I created this), we can have runit start PipeWire as a regular user.
 
 1. Login as the regular user.
-2. Create the service folders. ```sh
+
+2. Create the service folders.
+```sh
 mkdir -p ~/service/sv
 ```
-3. Create the PipeWire service definition. ```sh
+
+3. Create the PipeWire service definition.
+```sh
 mkdir -p ~/service/def/pipewire/log
+
 tee ~/service/def/pipewire/run <<-EOF
 #!/bin/sh
 exec 2>&1
 XDG_RUNTIME_DIR="/run/user/$(id -u)" exec pipewire
 EOF
+
 tee ~/service/def/pipewire/log/run <<-EOF
 #!/bin/sh
 exec vlogger -t pipewire -p daemon
 EOF
+
 chmod +x ~/service/def/pipewire/run ~/service/def/pipewire/log/run
 ```
-4. List the dependencies (services you want to wait that they are up before starting your own services). ```sh
+
+4. List the dependencies (services you want to wait that they are up before starting your own services).
+```sh
 tee ~/service/dependencies <<-EOF
 alsa
 elogind
 dbus
 EOF
 ```
-5. Run the install script of this repository as root. ```sh
+
+5. Run the install script of this repository as root.
+```sh
 sudo ./install
 ```
-6. Link the service definition so runit starts it. ```sh
+
+6. Link the service definition so runit starts it.
+```sh
 ln -s ~/service/def/pipewire ~/service/sv/pipewire
 ```
 
 If everything goes well, the end result will be:
+
 1. System service `runsvdir-$USER` that execs into `runsvdir` as `$USER`.
 2. `pipewire` service running as `$USER` because the previous `runsvdir` started it.
 3. PipeWire logs will be available at `~/service/log/pipewire`.
