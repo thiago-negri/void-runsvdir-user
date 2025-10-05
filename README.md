@@ -145,3 +145,11 @@ If it still doesn't show up, maybe your user session already has PipeWire runnin
 it as part of X (check your `~/.xinitrc`).  To be sure everything works the way it should, make sure you reboot
 your system and see that PipeWire is started during boot correctly.  It may emit some warnings that there is no X
 running when it starts, but it should work fine when you start X, no need to restart any service.
+
+
+Q&A
+---
+
+### Why copy the files instead of symlinks?
+Because people will clone this repository as a regular user (me included, I work on this repo as my regular user),
+and making root level stuff (runit) source symlinks to files that users can edit doesn't seem to be a good idea.
