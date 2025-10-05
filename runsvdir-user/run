@@ -1,8 +1,11 @@
 #!/bin/sh
 exec 2>&1
 deps="%HOME%/service/dependencies"
-if [ -f "$deps" ]; then
+if [ -s "$deps" ]; then
     svlist=$(cat "$deps")
     sv start $svlist || exit 1
 fi
-exec chpst -u %USER% runsvdir %HOME%/service/sv
+export HOME="%HOME%"
+export USER="%USER%"
+groups="$(id -Gn "%USER%" | tr ' ' ':')"
+exec chpst -u "%USER%:$groups" runsvdir "%HOME%/service/sv"
