@@ -11,7 +11,7 @@ prefix=/var/log
 uid=$(id -u)
 if [ $uid -ge 1000 ]; then
   uhome=$(getent passwd $uid | cut -d: -f6)
-  if [ -n "$uhome" ] && [ -d "$uhome/service" ]; then
+  if [ -n "$uhome" -a -d "$uhome/service" ]; then
     prefix="$uhome/service/log"
   fi
 fi
