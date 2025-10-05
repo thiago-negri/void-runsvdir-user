@@ -114,6 +114,20 @@ If everything goes well, the end result will be:
 2. `pipewire` service running as `$USER` because the previous `runsvdir` started it.
 3. PipeWire logs will be available at `~/service/log/pipewire`.
 
+You can check it running:
+```sh
+ps -C runsv -C runsvdir -o user,cmd
+```
+
+You should see something like:
+```
+USER     CMD
+root     runsvdir -P /run/runit/runsvdir/current log: ........................
+root     runsv runsvdir-YOU
+YOU      runsvdir /home/YOU/service/sv
+YOU      runsv pipewire
+```
+
 If you don't see the logs, try restarting all service logs (the install script changed `/etc/vlogger`):
 ```sh
 sudo sv restart /var/service/*/log
