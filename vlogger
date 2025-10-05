@@ -17,6 +17,6 @@ if [ $uid -ge 1000 ]; then
 fi
 
 mkdir -p "$prefix/$1"
-exec svlogd "$prefix/$1"
+exec svlogd -tt "$prefix/$1"
 
 # vim: ts=2 sw=2
