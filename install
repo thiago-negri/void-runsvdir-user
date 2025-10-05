@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+#
+# This will install a custom vlogger and one runsvdir service for each user that has a ~/service folder.
+#
+# It will not overwrite any file by default.  If you're reinstalling, use option "-f" to overwrite
+# files.
+#
+# You're supposed to run this as root, so audit the script before running.
+#
+
+force=false
+[ "$1" = "-f" ] && force=true
+
+dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+sed_quote() {
+  printf '%s\n' "$1" | sed 's/[\/&]/\\&/g'
+}
+
+# Install custom vlogger
+vlogger_installed=false
+vlogger_dst=/etc/vlogger
+if ! $force && [ -e "$vlogger_dst" ]; then
+  echo "Custom vlogger exists.  Will not overwrite.  '$vlogger_dst'"
+else
+  echo "Creating  '$vlogger_dst'."
+  rm -f "$vlogger_dst"
+  cp "$dir/vlogger" "$vlogger_dst"
+  vlogger_installed=true
+fi
+
+# Install one runsvdir service for each user that has a ~/service folder.
+while IFS=: read -r username _ uid _ _ uhome _; do
+  # Real users start at uid 1000
+  if [ $uid -ge 1000 ] && [ -d "$uhome/service" ]; then
+    newsv="/etc/sv/runsvdir-$username"
+    if ! $force && [ -e "$newsv" ]; then
+      echo "User runsvdir exists.  Will not overwrite.  '$newsv'"
+    else
+      echo "Creating  '$newsv'."
+      rm -rf "$newsv"
+      mkdir -p "$newsv" "$newsv/log"
+      cp "$dir/runsvdir-user/run" "$newsv/run"
+      cp "$dir/runsvdir-user/log/run" "$newsv/log/run"
+      username_qt=$(sed_quote "$username")
+      sed -i "s/%USER%/$username_qt/g" "$newsv/run"
+      sed -i "s/%USER%/$username_qt/g" "$newsv/log/run"
+      uhome_qt=$(sed_quote "$uhome")
+      sed -i "s/%HOME%/$uhome_qt/g" "$newsv/run"
+      sed -i "s/%HOME%/$uhome_qt/g" "$newsv/log/run"
+
+      link="/var/service/runsvdir-$username"
+      echo "Creating  '$link'."
+      ln -sf "$newsv" "$link"
+    fi
+  fi
+done <<< $(getent passwd)
+
+# Install shell profile that sets SVDIR per user
+profile_dst=/etc/profile.d/runsvdir-user.sh
+if ! $force && [ -e "$profile_dst" ]; then
+  echo "Shell profile extension exists.  Will not overwrite.  '$profile_dst'"
+else
+  echo "Creating  '$profile_dst'."
+  rm -f "$profile_dst"
+  cp "$dir/profile.d/runsvdir-user.sh" "$profile_dst"
+fi
+
+# Remember to restart loggers if custom vlogger was installed.
+if $vlogger_installed; then
+  echo ""
+  echo "Custom vlogger was installed.  You need to reboot or restart service loggers for it to take effect."
+  echo "# sv restart /var/service/*/log"
+fi
+
+# vim: ts=2 sw=2

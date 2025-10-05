@@ -1,0 +1,8 @@
+#!/bin/sh
+exec 2>&1
+deps="%HOME%/service/dependencies"
+if [ -f "$deps" ]; then
+    svlist=$(cat "$deps")
+    sv start $svlist || exit 1
+fi
+exec chpst -u %USER% runsvdir %HOME%/service/sv

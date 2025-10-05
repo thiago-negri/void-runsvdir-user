@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# Custom vlogger that will route services logs
+#
+# System services --> /var/log/*
+# User services ----> ~/service/log/*
+#
+
+prefix=/var/log
+
+uid=$(id -u)
+if [ ! $uid -eq 0 ]; then
+  uhome=$(getent passwd $uid | cut -d: -f6)
+  if [ -n "$uhome" ]; then
+    prefix="$uhome/service/log"
+  fi
+fi
+
+mkdir -p "$prefix/$1"
+exec svlogd "$prefix/$1"
+
+# vim: ts=2 sw=2
